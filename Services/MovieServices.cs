@@ -15,7 +15,11 @@ public class MovieServices : IMovieServices
     public Movie? Get(int id)
     {
         var m = _ctx.Movies.Find(id);
-        _ctx.Entry(m).Collection(m=> m.Characters).Load();
+        if(m != null)
+        {
+            _ctx.Entry(m).Collection(m=> m.Characters).Load();
+            _ctx.Entry(m).Reference(m=> m.Genre).Load();
+        }
         return m;
     } 
 
@@ -54,12 +58,13 @@ public class MovieServices : IMovieServices
             if(order == "ASC")
                 query = query.OrderBy(m => m.CreationDate);
             if(order == "DESC")
-                query = query.OrderByDescending(m=> m.CreationDate);
+                query = query.OrderByDescending(m=> m.CreationDate);            
         }
         foreach(Movie m in query)                      
         {
-             _ctx.Entry(m).Collection(m => m.Characters).Load();
-        }
+            _ctx.Entry(m).Collection(m => m.Characters).Load();                         
+            _ctx.Entry(m).Reference(m=> m.Genre).Load();
+        }                
         return query.ToList();
     }
 }
