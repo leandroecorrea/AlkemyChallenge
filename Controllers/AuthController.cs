@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using DisneyAPI.Helpers;
 
 namespace DisneyAPI.Controllers;
 [ApiController]
@@ -43,22 +44,8 @@ public class AuthController : ControllerBase
             Password = user.Password
         });
         if(loggedInUser == null) return NotFound("Credenciales de acceso inválidas");
-        var claims =  new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, loggedInUser.Email)
-        };
-        var token = new JwtSecurityToken(
-            issuer: Configuration["Jwt:Issuer"],
-            audience: Configuration["Jwt:Audience"],
-            claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(30),
-            notBefore: DateTime.UtcNow,
-            signingCredentials: new SigningCredentials(
-                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"])),
-                SecurityAlgorithms.HmacSha256)
-        );
-        var tokenString = new JwtSecurityTokenHandler().WriteToken(token);        
-        return Ok(tokenString);
+        var token = TokenGenerator.GenerateToken(Configuration, loggedInUser.Email);    
+        return Ok(token);
     }
 
     // Enpoint para debug
